@@ -13,10 +13,11 @@ clean:
 
 .PHONY: install
 install:
-	go get ./hello-world
+	go get .
 
 main:
 	go build -o ./bin/hello-world ./hello-world/main.go
+	go build -o ./bin/login ./login/main.go
 
 # compile the code to run in Lambda (local or real)
 .PHONY: lambda
