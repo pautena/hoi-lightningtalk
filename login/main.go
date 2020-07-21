@@ -12,9 +12,9 @@ import (
 	"hoiLightningTalk/app"
 )
 
-func SignIn(Id string){
+func SignIn(Id string, Username string){
 	ur := db.NewUserRepository()
-	ur.SaveUser(domain.User{Id:Id})
+	ur.SaveUser(domain.User{Id:Username,Username:Username,SlackId:Id})
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -27,6 +27,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	team :=params.Get("team_domain")
 	uID :=params.Get("user_id")
+	username :=params.Get("user_name")
 	rUrl :=params.Get("response_url")
 
 	if team == "" {
@@ -43,8 +44,15 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
+	if username == "" {
+		return events.APIGatewayProxyResponse{
+			Body:       "Undefined username",
+			StatusCode: 400,
+		}, nil
+	}
 
-	SignIn(uID)
+
+	SignIn(uID,username)
 
 	msg :=fmt.Sprintf("Hello, user %v, from team %v",uID,team)
 

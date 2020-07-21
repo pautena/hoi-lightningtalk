@@ -8,16 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"encoding/json"
+	"hoiLightningTalk/domain"
 )
 
 
-
-func SendSlackMessageToUrl(url string, msg string){
-
-	rBody,err := json.Marshal(map[string]string{
-		"text":msg,
-	})
-	
+func sendMessage(url string, rBody []byte) {
 	client := &http.Client{}
 	req,err := http.NewRequest("POST",url,bytes.NewBuffer(rBody))
 
@@ -27,11 +22,6 @@ func SendSlackMessageToUrl(url string, msg string){
 	}
 
 	secret :=os.Getenv("SLACK_BOT_SECRET")
-
-	if err != nil {
-		log.Println(err)
-		return
-	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v",secret))
 	req.Header.Add("Content-Type", "application/json")
@@ -43,8 +33,6 @@ func SendSlackMessageToUrl(url string, msg string){
 		return
 	}
 
-	//TODO add headers
-
 	defer resp.Body.Close()
 
 	body,err := ioutil.ReadAll(resp.Body)
@@ -55,5 +43,37 @@ func SendSlackMessageToUrl(url string, msg string){
 	}
 	
 	log.Println(string(body))
+}
 
+
+
+func SendSlackMessageToUrl(url string, msg string){
+
+	rBody,err := json.Marshal(domain.SlackPayload{
+		Text:msg,
+	})	
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	sendMessage(url,rBody)
+}
+
+func SendSlackMessageToUser(text string, channel string,attachments []domain.SlackAttachment){
+	rBody,err := json.Marshal(domain.SlackPayload{
+		Channel:channel,
+		Text:text,
+		Attachments:attachments,
+		UnfurlLinks:false,
+		UnfurlMedia:false,
+	})
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	sendMessage("https://slack.com/api/chat.postMessage",rBody)
 }
