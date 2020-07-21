@@ -36,3 +36,10 @@ func (ur UserRepository) SaveUser(p domain.User) {
 
 	fmt.Println("User had been inserted: ", insertResult)
 }
+
+func (ur UserRepository) GetUser(uId string) (domain.User, error) {
+	var result domain.User;
+	filter := bson.D{{"_id", uId}}
+	err := ur.Collection.FindOne(context.TODO(),filter).Decode(&result)
+	return result, err
+}
