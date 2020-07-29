@@ -10,9 +10,7 @@ import (
 	"hoiLightningTalk/domain"
 )
 
-/*
-Mongodb models
-*/
+
 
 type UserRepository struct {
 	Collection *mongo.Collection 

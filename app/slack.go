@@ -5,20 +5,20 @@ import (
 	"log"
 	"os"
 	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"encoding/json"
 	"hoiLightningTalk/domain"
 )
 
 
-func sendMessage(url string, rBody []byte) {
+func sendMessage(url string, rBody []byte) domain.SlackResponse{
 	client := &http.Client{}
 	req,err := http.NewRequest("POST",url,bytes.NewBuffer(rBody))
 
 	if err != nil {
 		log.Println(err)
-		return
+		return domain.SlackResponse{}
 	}
 
 	secret :=os.Getenv("SLACK_BOT_SECRET")
@@ -30,7 +30,7 @@ func sendMessage(url string, rBody []byte) {
 
 	if err != nil {
 		log.Println(err)
-		return
+		return domain.SlackResponse{}
 	}
 
 	defer resp.Body.Close()
@@ -39,15 +39,26 @@ func sendMessage(url string, rBody []byte) {
 
 	if err!=nil {
 		log.Println(err)
-		return
+		return domain.SlackResponse{}
+	}
+
+	log.Println(string(body))
+	
+	var response domain.SlackResponse;
+	err = json.Unmarshal([]byte(body), &response)
+
+	if err!=nil {
+		log.Println(err)
+		return domain.SlackResponse{}
 	}
 	
-	log.Println(string(body))
+	
+	return response
 }
 
 
 
-func SendSlackMessageToUrl(url string, msg string){
+func SendSlackMessageToUrl(url string, msg string) domain.SlackResponse{
 
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Text:msg,
@@ -55,13 +66,13 @@ func SendSlackMessageToUrl(url string, msg string){
 
 	if err != nil {
 		log.Println(err)
-		return
+		return domain.SlackResponse{}
 	}
 
-	sendMessage(url,rBody)
+	return sendMessage(url,rBody)
 }
 
-func SendSlackMessageToUser(text string, channel string,attachments []domain.SlackAttachment){
+func SendSlackMessageToUser(text string, channel string,attachments []domain.SlackAttachment) domain.SlackResponse{
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Channel:channel,
 		Text:text,
@@ -72,8 +83,8 @@ func SendSlackMessageToUser(text string, channel string,attachments []domain.Sla
 
 	if err != nil {
 		log.Println(err)
-		return
+		return domain.SlackResponse{}
 	}
 
-	sendMessage("https://slack.com/api/chat.postMessage",rBody)
+	return sendMessage("https://slack.com/api/chat.postMessage",rBody)
 }

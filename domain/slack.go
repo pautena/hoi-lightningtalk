@@ -58,3 +58,9 @@ type SlackPayload struct {
 	UnfurlMedia bool         			`json:"unfurl_media,omitempty"`
 	Markdown    bool         			`json:"mrkdwn,omitempty"`
 }
+
+type SlackResponse struct {
+	Ok				bool 	`json:"ok" bson:"Ok"`
+	Channel		string 	`json:"channel" bson:"Channel"`
+	Ts				string 	`json:"ts" bson:"_id"`
+}
