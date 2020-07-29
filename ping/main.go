@@ -26,6 +26,7 @@ func GetMessage(Text string, PingUser string) string{
 
 func SendPing(PingUserId string, Message, ByUsername string) error{
 	ur := db.NewUserRepository()
+	mr := db.NewMessageRepository()
 
 	PingUser,err := ur.GetUser(PingUserId)
 
@@ -60,12 +61,14 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 					Text: "Chess",
 					Type: "button",
 					Value: "chess",
+					Url:"www.google.com",
 				},
 				domain.SlackAction{
 						Name: "game",
 						Text: "Falken's Maze",
 						Type: "button",
 						Value: "maze",
+						Url:"www.example.com",
 				},
 				domain.SlackAction{
 					Name: "game",
@@ -73,6 +76,7 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 						Style: "danger",
 						Type: "button",
 						Value: "war",
+						Url:"www.example1.com",
 						Confirm: domain.SlackConfirm{
 								Title: "Are you sure?",
 								Text: "Wouldn't you prefer a good game of chess?",
@@ -84,7 +88,8 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 			},
 		}
 
-	app.SendSlackMessageToUser(text,PingUser.SlackId,attachments)
+	response := app.SendSlackMessageToUser(text,PingUser.SlackId,attachments)
+	mr.SaveMessage(response)
 
 	return nil
 }
