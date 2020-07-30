@@ -57,6 +57,8 @@ type SlackPayload struct {
 	UnfurlLinks bool         			`json:"unfurl_links,omitempty"`
 	UnfurlMedia bool         			`json:"unfurl_media,omitempty"`
 	Markdown    bool         			`json:"mrkdwn,omitempty"`
+	Ts    			string         		`json:"ts,omitempty"`
+	ThreadTs		string         		`json:"thread_ts,omitempty"`
 }
 
 type SlackResponse struct {

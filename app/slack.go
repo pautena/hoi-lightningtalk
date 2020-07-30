@@ -88,3 +88,33 @@ func SendSlackMessageToUser(text string, channel string,attachments []domain.Sla
 
 	return sendMessage("https://slack.com/api/chat.postMessage",rBody)
 }
+
+func UpdateSlackMessage(text string, channel string,ts string) domain.SlackResponse{
+	rBody,err := json.Marshal(domain.SlackPayload{
+		Channel:channel,
+		Text:text,
+		Ts:ts,
+	})
+
+	if err != nil {
+		log.Println(err)
+		return domain.SlackResponse{}
+	}
+
+	return sendMessage("https://slack.com/api/chat.update",rBody)
+}
+
+func RepplySlackMessage(text string, channel string,ts string) domain.SlackResponse{
+	rBody,err := json.Marshal(domain.SlackPayload{
+		Channel:channel,
+		Text:text,
+		ThreadTs:ts,
+	})
+
+	if err != nil {
+		log.Println(err)
+		return domain.SlackResponse{}
+	}
+
+	return sendMessage("https://slack.com/api/chat.postMessage",rBody)
+}
