@@ -15,13 +15,30 @@ import (
 	"hoiLightningTalk/domain"
 )
 
-func GetPingUser(Text string) string{
-	parts := strings.Split(Text, " ")
+func GetPingUser(text string) string{
+	parts := strings.Split(text, " ")
 	return strings.ReplaceAll(parts[0],"@","")
 }
 
-func GetMessage(Text string, PingUser string) string{
-	return strings.ReplaceAll(Text,fmt.Sprintf("@%v",PingUser),"")
+func GetMessage(text string, pingUser string) string{
+	return strings.ReplaceAll(text,fmt.Sprintf("@%v",pingUser),"")
+}
+
+func GetPingedCallback(pingUserId string) (string,error){
+	ur := db.NewUserRepository()
+	pingUser,err := ur.GetUser(pingUserId)
+
+
+	if err != nil{
+		return "",errors.New(fmt.Sprintf("%v user doesn't exists",pingUserId))
+	}
+
+	if pingUser.CallbackText == ""{
+		return "",nil
+	}
+	callbackText := fmt.Sprintf("Callback from <@%v>: %v",pingUser.SlackId,pingUser.CallbackText)
+	return callbackText,nil;
+
 }
 
 func SendPing(PingUserId string, Message, ByUsername string) error{
@@ -116,18 +133,27 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	pingUser := GetPingUser(text)
 	message := GetMessage(text,pingUser)
+	pingedCallback,err := GetPingedCallback(pingUser)
 
-	err2:=SendPing(pingUser,message,byUsername)
-
-	if err2!= nil{
+	if err!= nil{
 		return events.APIGatewayProxyResponse{
-			Body:       err2.Error(),
+			Body:       err.Error(),
+			StatusCode: 400,
+		}, nil
+	}
+
+	err=SendPing(pingUser,message,byUsername)
+
+	if err!= nil{
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
 			StatusCode: 400,
 		}, nil
 	}
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
+		Body: pingedCallback,
 	}, nil
 }
 
