@@ -19,6 +19,7 @@ main:
 	go build -o ./bin/hello-world ./hello-world/main.go
 	go build -o ./bin/login ./login/main.go
 	go build -o ./bin/ping ./ping/main.go
+	go build -o ./bin/action-response ./action-response/main.go
 
 # compile the code to run in Lambda (local or real)
 .PHONY: lambda

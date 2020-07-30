@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"strings"
 	"errors"
-	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -30,7 +29,6 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 
 	PingUser,err := ur.GetUser(PingUserId)
 
-	log.Printf(fmt.Sprintf("@%v",PingUser))
 
 	if err != nil{
 		return errors.New(fmt.Sprintf("%v user doesn't exists",PingUserId))
@@ -52,34 +50,32 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 	attachments:= []domain.SlackAttachment{
 		{
 			Fallback: "You are unable to choose a game",
-			CallbackID: "wopr_game",
+			
+			CallbackID: "action_callback_id",
 			Color: "#3AA3E3",
 			AttachmentType: "default",
 			Actions: []domain.SlackAction{
 				domain.SlackAction{
-					Name: "game",
-					Text: "Chess",
+					Name: "strikethrough",
+					Text: "Strikethrough",
 					Type: "button",
-					Value: "chess",
-					Url:"www.google.com",
+					Value: "strikethrough",
 				},
 				domain.SlackAction{
-						Name: "game",
-						Text: "Falken's Maze",
+						Name: "italic",
+						Text: "Italic",
 						Type: "button",
-						Value: "maze",
-						Url:"www.example.com",
+						Value: "italic",
 				},
 				domain.SlackAction{
-					Name: "game",
+					Name: "war",
 					Text: "Thermonuclear War",
 						Style: "danger",
 						Type: "button",
 						Value: "war",
-						Url:"www.example1.com",
 						Confirm: domain.SlackConfirm{
 								Title: "Are you sure?",
-								Text: "Wouldn't you prefer a good game of chess?",
+								Text: "Wouldn't you prefer something less permanent?",
 								OkText: "Yes",
 								DismissText: "No",
 						},
@@ -95,7 +91,6 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-
 	params,err := url.ParseQuery(request.Body)
 
 	if err != nil {
