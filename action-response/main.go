@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"hoiLightningTalk/domain"
+	"hoiLightningTalk/app"
 
 )
 
@@ -24,16 +25,25 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	payload :=params.Get("payload")
 
-	var slackAction domain.SlackAction;
-	err = json.Unmarshal([]byte(payload), &slackAction)
+	var callback domain.SlackActionCallback;
+	err = json.Unmarshal([]byte(payload), &callback)
 
 	if err!=nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
+	actionValue  := callback.Actions[0].Value
+
+	if (actionValue == "strikethrough"){
+		app.Strikethrough(callback.Channel,callback.OriginalMessage)
+	}else if (actionValue == "italic"){
+		app.Italic(callback.Channel,callback.OriginalMessage)
+	}else if (actionValue == "war"){
+		app.ThermonuclearWar(callback.Channel,callback.OriginalMessage)
+	}
+
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:"Action success",
 	}, nil
 }
 

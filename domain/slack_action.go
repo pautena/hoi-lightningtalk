@@ -12,7 +12,7 @@ type SlackChannel struct {
 	Domain string `json:"domain"`
 }
 
-type SlackOriginalMessage struct {
+type SlackMessage struct {
 	Text string `json:"text"`
 	Ts string `json:"ts"`
 	Attachments []SlackAttachment `json:"attachments"` 
@@ -26,5 +26,5 @@ type SlackActionCallback struct {
 	User    				SlackUser      				`json:"user"`
 	ActionTs 				string 								`json:"action_ts"`
 	MessageTs 			string 								`json:"message_ts"`
-	OriginalMessage SlackOriginalMessage 	`json:"original_message"`
+	OriginalMessage SlackMessage 	`json:"original_message"`
 }
