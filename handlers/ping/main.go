@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"errors"
@@ -25,7 +26,6 @@ func GetMessage(Text string, PingUser string) string{
 
 func SendPing(PingUserId string, Message, ByUsername string) error{
 	ur := db.NewUserRepository()
-	mr := db.NewMessageRepository()
 
 	PingUser,err := ur.GetUser(PingUserId)
 
@@ -85,7 +85,7 @@ func SendPing(PingUserId string, Message, ByUsername string) error{
 		}
 
 	response := app.SendSlackMessageToUser(text,PingUser.SlackId,attachments)
-	mr.SaveMessage(response)
+	log.Println(response)
 
 	return nil
 }

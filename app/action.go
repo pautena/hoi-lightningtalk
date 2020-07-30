@@ -17,6 +17,6 @@ func Italic(channel domain.SlackChannel, message domain.SlackMessage){
 }
 
 func ThermonuclearWar(channel domain.SlackChannel, message domain.SlackMessage){
-	nuclearUrl:="https://media.giphy.com/media/XUFPGrX5Zis6Y/giphy.gif"
+	nuclearUrl:="https://media.giphy.com/media/3o7abwbzKeaRksvVaE/giphy.gif"
 	RepplySlackMessage(nuclearUrl,channel.Id,message.Ts)
 }
