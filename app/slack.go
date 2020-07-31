@@ -118,3 +118,17 @@ func RepplySlackMessage(text string, channel string,ts string) domain.SlackRespo
 
 	return sendMessage("https://slack.com/api/chat.postMessage",rBody)
 }
+
+func DeleteSlackMessage(channel string, ts string) domain.SlackResponse {
+	rBody,err := json.Marshal(domain.SlackPayload{
+		Channel:channel,
+		Ts:ts,
+	})
+
+	if err != nil {
+		log.Println(err)
+		return domain.SlackResponse{}
+	}
+
+	return sendMessage("https://slack.com/api/chat.delete",rBody)
+}

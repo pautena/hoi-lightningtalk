@@ -40,6 +40,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		app.Italic(callback.Channel,callback.OriginalMessage)
 	}else if (actionValue == "war"){
 		app.ThermonuclearWar(callback.Channel,callback.OriginalMessage)
+	}else if (actionValue == "delete"){
+		app.DeleteMessage(callback.Channel,callback.OriginalMessage)
 	}
 
 	return events.APIGatewayProxyResponse{

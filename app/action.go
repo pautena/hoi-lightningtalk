@@ -20,3 +20,7 @@ func ThermonuclearWar(channel domain.SlackChannel, message domain.SlackMessage){
 	nuclearUrl:="https://media.giphy.com/media/3o7abwbzKeaRksvVaE/giphy.gif"
 	RepplySlackMessage(nuclearUrl,channel.Id,message.Ts)
 }
+
+func DeleteMessage(channel domain.SlackChannel, message domain.SlackMessage){
+	DeleteSlackMessage(channel.Id,message.Ts)
+}
