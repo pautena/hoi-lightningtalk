@@ -133,14 +133,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	pingUser := GetPingUser(text)
 	message := GetMessage(text,pingUser)
-	pingedCallback,err := GetPingedCallback(pingUser)
-
-	if err!= nil{
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: 400,
-		}, nil
-	}
+	pingedCallback,_ := GetPingedCallback(pingUser)
 
 	err=SendPing(pingUser,message,byUsername)
 
