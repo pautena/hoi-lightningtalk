@@ -6,16 +6,9 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-
-	"hoiLightningTalk/domain"
-	"hoiLightningTalk/db"
 	"hoiLightningTalk/app"
 )
 
-func SignIn(id string, username string,callbackText string){
-	ur := db.NewUserRepository()
-	ur.SaveUser(domain.User{Id:username,Username:username,SlackId:id,CallbackText:callbackText})
-}
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
@@ -53,7 +46,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 
-	SignIn(uID,username,text)
+	app.SignIn(uID,username,text)
 
 	msg :=fmt.Sprintf("Hello, user %v, from team %v",uID,team)
 
