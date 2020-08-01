@@ -4,32 +4,27 @@ import (
 	"fmt"
 	"net/url"
 
+	"hoiLightningTalk/app"
+	"hoiLightningTalk/infra/mgo"
+	"hoiLightningTalk/infra/slack"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-
-	"hoiLightningTalk/domain"
-	"hoiLightningTalk/db"
-	"hoiLightningTalk/app"
 )
 
-func SignIn(id string, username string,callbackText string){
-	ur := db.NewUserRepository()
-	ur.SaveUser(domain.User{Id:username,Username:username,SlackId:id,CallbackText:callbackText})
-}
+func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository, messageService app.MessageService) (events.APIGatewayProxyResponse, error) {
 
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-
-	params,err := url.ParseQuery(request.Body)
+	params, err := url.ParseQuery(request.Body)
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	team :=params.Get("team_domain")
-	uID :=params.Get("user_id")
-	username :=params.Get("user_name")
-	rUrl :=params.Get("response_url")
-	text :=params.Get("text")
+	team := params.Get("team_domain")
+	uID := params.Get("user_id")
+	username := params.Get("user_name")
+	responseURL := params.Get("response_url")
+	text := params.Get("text")
 
 	if team == "" {
 		return events.APIGatewayProxyResponse{
@@ -52,13 +47,12 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
+	app.SignIn(uID, username, text, userRepo)
 
-	SignIn(uID,username,text)
+	msg := fmt.Sprintf("Hello, user %v, from team %v", uID, team)
 
-	msg :=fmt.Sprintf("Hello, user %v, from team %v",uID,team)
-
-	if rUrl != "" {
-		app.SendSlackMessageToUrl(rUrl,msg)
+	if responseURL != "" {
+		messageService.SendMessageToHook(responseURL, msg)
 	}
 
 	return events.APIGatewayProxyResponse{
@@ -67,5 +61,9 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 }
 
 func main() {
-	lambda.Start(handler)
+	userRepo := mgo.NewMongoUserRepository()
+	messageService := slack.NewSlackService()
+	lambda.Start(func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		return handler(request, userRepo, messageService)
+	})
 }
