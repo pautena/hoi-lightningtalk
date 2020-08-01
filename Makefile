@@ -3,9 +3,6 @@ S3_BUCKET := $(S3_BUCKET)
 STACK_NAME := $(STACK_NAME)
 TEMPLATE = template.yaml
 
-.PHONY: test
-test:
-	go test ./...
 
 .PHONY: clean
 clean:

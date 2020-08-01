@@ -4,23 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"hoiLightningTalk/db"
 	"hoiLightningTalk/domain"
 )
 
 
 
-func SendPing(PingUserId string, Message, ByUsername string) error{
-	ur := db.NewUserRepository()
-
-	PingUser,err := ur.GetUser(PingUserId)
-
+func SendPing(PingUserId string, Message, ByUsername string, userRepo UserRepository) error{
+	PingUser,err := userRepo.GetUser(PingUserId)
 
 	if err != nil{
 		return errors.New(fmt.Sprintf("%v user doesn't exists",PingUserId))
 	}
 
-	By,err := ur.GetUser(ByUsername)
+	By,err := userRepo.GetUser(ByUsername)
 
 	if err != nil{
 		return errors.New(fmt.Sprintf("%v user doesn't exists",PingUserId))

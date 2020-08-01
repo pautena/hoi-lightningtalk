@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 
 	"hoiLightningTalk/app"
+	"hoiLightningTalk/infra/mgo"
 )
 
 func GetPingUser(text string) string{
@@ -22,7 +23,7 @@ func GetMessage(text string, pingUser string) string{
 
 
 
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository) (events.APIGatewayProxyResponse, error) {
 	params,err := url.ParseQuery(request.Body)
 
 	if err != nil {
@@ -48,9 +49,9 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	pingUser := GetPingUser(text)
 	message := GetMessage(text,pingUser)
-	pingedCallback,_ := app.GetUserUrl(pingUser)
+	pingedCallback,_ := app.GetUserUrl(pingUser,userRepo)
 
-	err=app.SendPing(pingUser,message,byUsername)
+	err=app.SendPing(pingUser,message,byUsername,userRepo)
 
 	if err!= nil{
 		return events.APIGatewayProxyResponse{
@@ -66,5 +67,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 }
 
 func main() {
-	lambda.Start(handler)
+	userRepo:= mgo.NewMongoUserRepository();
+	lambda.Start(func (request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
+		return handler(request,userRepo)
+	})
 }

@@ -7,10 +7,11 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"hoiLightningTalk/app"
+	"hoiLightningTalk/infra/mgo"
 )
 
 
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository) (events.APIGatewayProxyResponse, error) {
 
 	params,err := url.ParseQuery(request.Body)
 
@@ -46,7 +47,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 
-	app.SignIn(uID,username,text)
+	app.SignIn(uID,username,text,userRepo)
 
 	msg :=fmt.Sprintf("Hello, user %v, from team %v",uID,team)
 
@@ -60,5 +61,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 }
 
 func main() {
-	lambda.Start(handler)
+	userRepo:= mgo.NewMongoUserRepository();
+	lambda.Start(func (request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
+		return handler(request,userRepo)
+	})
 }

@@ -1,4 +1,4 @@
-package db
+package mgo
 
 import (
 	"context"
@@ -8,21 +8,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"hoiLightningTalk/domain"
+	"hoiLightningTalk/app"
 )
 
 
 
-type UserRepository struct {
+type UserMongoRepository struct {
 	Collection *mongo.Collection 
 }
 
 
 
-func NewUserRepository() UserRepository {
-	return UserRepository {Collection:getDatabase().Collection("users")};
+func NewMongoUserRepository() app.UserRepository {
+	return UserMongoRepository {Collection:getDatabase().Collection("users")};
 }
 
-func (ur UserRepository) SaveUser(p domain.User) {
+func (ur UserMongoRepository) SaveUser(p domain.User) {
 	
 	filter := bson.D{{"_id", p.Id}}
 	options := options.Replace().SetUpsert(true)
@@ -35,7 +36,7 @@ func (ur UserRepository) SaveUser(p domain.User) {
 	fmt.Println("User had been inserted: ", insertResult)
 }
 
-func (ur UserRepository) GetUser(uId string) (domain.User, error) {
+func (ur UserMongoRepository) GetUser(uId string) (domain.User, error) {
 	var result domain.User;
 	filter := bson.D{{"_id", uId}}
 	err := ur.Collection.FindOne(context.TODO(),filter).Decode(&result)

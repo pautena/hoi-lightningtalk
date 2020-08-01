@@ -5,18 +5,15 @@ import (
 	"fmt"
 
 	"hoiLightningTalk/domain"
-	"hoiLightningTalk/db"
 
 )
 
-func SignIn(id string, username string,callbackText string){
-	ur := db.NewUserRepository()
-	ur.SaveUser(domain.User{Id:username,Username:username,SlackId:id,CallbackText:callbackText})
+func SignIn(id string, username string,callbackText string, userRepo UserRepository){
+	userRepo.SaveUser(domain.User{Id:username,Username:username,SlackId:id,CallbackText:callbackText})
 }
 
-func GetUserUrl(userId string) (string,error){
-	ur := db.NewUserRepository()
-	user, err := ur.GetUser(userId)
+func GetUserUrl(userId string, userRepo UserRepository) (string,error){
+	user, err := userRepo.GetUser(userId)
 
 
 	if err != nil{
