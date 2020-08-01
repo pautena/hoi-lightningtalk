@@ -26,7 +26,7 @@ func handler(request events.APIGatewayProxyRequest, messageService app.MessageSe
 
 	payload :=params.Get("payload")
 
-	var callback domain.SlackActionCallback;
+	var callback domain.ActionCallback;
 	err = json.Unmarshal([]byte(payload), &callback)
 
 	if err!=nil {

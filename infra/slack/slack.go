@@ -17,6 +17,7 @@ type SlackService struct {
 	postMessageUrl string
 	chatUpdateUrl string
 	chatDeleteUrl string
+	parser SlackParser
 }
 
 func NewSlackService() app.MessageService{
@@ -24,17 +25,18 @@ func NewSlackService() app.MessageService{
 		postMessageUrl: "https://slack.com/api/chat.postMessage",
 		chatUpdateUrl: "https://slack.com/api/chat.update",
 		chatDeleteUrl: "https://slack.com/api/chat.delete",
+		parser: NewSlackParser(),
 	}
 }
 
 
-func (ss SlackService) sendMessage(url string, rBody []byte) domain.SlackResponse{
+func (ss SlackService) sendMessage(url string, rBody []byte) domain.MessageResponse{
 	client := &http.Client{}
 	req,err := http.NewRequest("POST",url,bytes.NewBuffer(rBody))
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	secret :=os.Getenv("SLACK_BOT_SECRET")
@@ -46,7 +48,7 @@ func (ss SlackService) sendMessage(url string, rBody []byte) domain.SlackRespons
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	defer resp.Body.Close()
@@ -55,58 +57,58 @@ func (ss SlackService) sendMessage(url string, rBody []byte) domain.SlackRespons
 
 	if err!=nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	log.Println(string(body))
 	
-	var response domain.SlackResponse;
+	var response SlackResponse
 	err = json.Unmarshal([]byte(body), &response)
 
 	if err!=nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 	
 	
-	return response
+	return ss.parser.ParseResponse(response)
 }
 
 
 
-func (ss SlackService) SendMessageToHook(url string, msg string) domain.SlackResponse{
+func (ss SlackService) SendMessageToHook(url string, msg string) domain.MessageResponse{
 
-	rBody,err := json.Marshal(domain.SlackPayload{
+	rBody,err := json.Marshal(SlackPayload{
 		Text:msg,
 	})	
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	return ss.sendMessage(url,rBody)
 }
 
-func (ss SlackService) SendMessageToChannel(text string, channel string,attachments []domain.SlackAttachment) domain.SlackResponse{
-	rBody,err := json.Marshal(domain.SlackPayload{
+func (ss SlackService) SendMessageToChannel(text string, channel string,attachments []domain.Attachment) domain.MessageResponse{
+	rBody,err := json.Marshal(SlackPayload{
 		Channel:channel,
 		Text:text,
-		Attachments:attachments,
+		Attachments:ss.parser.ParseAttachments(attachments),
 		UnfurlLinks:false,
 		UnfurlMedia:false,
 	})
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	return ss.sendMessage(ss.postMessageUrl,rBody)
 }
 
-func (ss SlackService) UpdateMessage(text string, channel string,ts string) domain.SlackResponse{
-	rBody,err := json.Marshal(domain.SlackPayload{
+func (ss SlackService) UpdateMessage(text string, channel string,ts string) domain.MessageResponse{
+	rBody,err := json.Marshal(SlackPayload{
 		Channel:channel,
 		Text:text,
 		Ts:ts,
@@ -114,14 +116,14 @@ func (ss SlackService) UpdateMessage(text string, channel string,ts string) doma
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	return ss.sendMessage(ss.chatUpdateUrl,rBody)
 }
 
-func (ss SlackService) RepplyMessage(text string, channel string,ts string) domain.SlackResponse{
-	rBody,err := json.Marshal(domain.SlackPayload{
+func (ss SlackService) RepplyMessage(text string, channel string,ts string) domain.MessageResponse{
+	rBody,err := json.Marshal(SlackPayload{
 		Channel:channel,
 		Text:text,
 		ThreadTs:ts,
@@ -129,22 +131,21 @@ func (ss SlackService) RepplyMessage(text string, channel string,ts string) doma
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
 
 	return ss.sendMessage(ss.postMessageUrl,rBody)
 }
 
-func (ss SlackService) DeleteMessage(channel string, ts string) domain.SlackResponse {
-	rBody,err := json.Marshal(domain.SlackPayload{
+func (ss SlackService) DeleteMessage(channel string, ts string) domain.MessageResponse {
+	rBody,err := json.Marshal(SlackPayload{
 		Channel:channel,
 		Ts:ts,
 	})
 
 	if err != nil {
 		log.Println(err)
-		return domain.SlackResponse{}
+		return domain.MessageResponse{}
 	}
-
 	return ss.sendMessage(ss.chatDeleteUrl,rBody)
 }

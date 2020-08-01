@@ -1,4 +1,4 @@
-package domain
+package slack
 
 type SlackField struct {
 	Title string `json:"title"`
@@ -61,8 +61,12 @@ type SlackPayload struct {
 	ThreadTs		string         		`json:"thread_ts,omitempty"`
 }
 
+//Slack api response
+
 type SlackResponse struct {
 	Ok				bool 	`json:"ok" bson:"Ok"`
 	Channel		string 	`json:"channel" bson:"Channel"`
 	Ts				string 	`json:"ts" bson:"_id"`
 }
+
+
