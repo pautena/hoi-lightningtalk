@@ -13,26 +13,24 @@ import (
 	"hoiLightningTalk/infra/slack"
 )
 
-func GetPingUser(text string) string{
+func GetPingUser(text string) string {
 	parts := strings.Split(text, " ")
-	return strings.ReplaceAll(parts[0],"@","")
+	return strings.ReplaceAll(parts[0], "@", "")
 }
 
-func GetMessage(text string, pingUser string) string{
-	return strings.ReplaceAll(text,fmt.Sprintf("@%v",pingUser),"")
+func GetMessage(text string, pingUser string) string {
+	return strings.ReplaceAll(text, fmt.Sprintf("@%v", pingUser), "")
 }
 
-
-
-func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository,messageService app.MessageService) (events.APIGatewayProxyResponse, error) {
-	params,err := url.ParseQuery(request.Body)
+func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository, messageService app.MessageService) (events.APIGatewayProxyResponse, error) {
+	params, err := url.ParseQuery(request.Body)
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	text :=params.Get("text")
-	byUsername :=params.Get("user_name")
+	text := params.Get("text")
+	byUsername := params.Get("user_name")
 
 	if byUsername == "" {
 		return events.APIGatewayProxyResponse{
@@ -49,25 +47,25 @@ func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository,m
 	}
 
 	pingUser := GetPingUser(text)
-	message := GetMessage(text,pingUser)
-	pingedCallback,_ := app.GetUserUrl(pingUser,userRepo)
+	message := GetMessage(text, pingUser)
+	pingedCallback, _ := app.GetUserURL(pingUser, userRepo)
 
-	err=app.SendPing(pingUser,message,byUsername,userRepo,messageService)
+	err = app.SendPing(pingUser, message, byUsername, userRepo, messageService)
 
-	if err!= nil{
+	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body: pingedCallback,
+		Body:       pingedCallback,
 	}, nil
 }
 
 func main() {
-	userRepo:= mgo.NewMongoUserRepository();
-	messageService:= slack.NewSlackService();
-	lambda.Start(func (request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
-		return handler(request,userRepo,messageService)
+	userRepo := mgo.NewMongoUserRepository()
+	messageService := slack.NewSlackService()
+	lambda.Start(func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		return handler(request, userRepo, messageService)
 	})
 }

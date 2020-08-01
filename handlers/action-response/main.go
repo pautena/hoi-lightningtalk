@@ -1,48 +1,47 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/url"
-	"encoding/json"
+
+	"hoiLightningTalk/app"
+	"hoiLightningTalk/domain"
+	"hoiLightningTalk/infra/slack"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"hoiLightningTalk/domain"
-	"hoiLightningTalk/app"
-	"hoiLightningTalk/infra/slack"
-
 )
 
 func handler(request events.APIGatewayProxyRequest, messageService app.MessageService) (events.APIGatewayProxyResponse, error) {
 
 	log.Println(request.Body)
 
-	params,err := url.ParseQuery(request.Body)
+	params, err := url.ParseQuery(request.Body)
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
+	payload := params.Get("payload")
 
-	payload :=params.Get("payload")
-
-	var callback domain.ActionCallback;
+	var callback domain.ActionCallback
 	err = json.Unmarshal([]byte(payload), &callback)
 
-	if err!=nil {
+	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	actionValue  := callback.Actions[0].Value
+	actionValue := callback.Actions[0].Value
 
-	if (actionValue == "strikethrough"){
-		app.Strikethrough(callback.Channel,callback.OriginalMessage, messageService)
-	}else if (actionValue == "italic"){
-		app.Italic(callback.Channel,callback.OriginalMessage, messageService)
-	}else if (actionValue == "war"){
-		app.ThermonuclearWar(callback.Channel,callback.OriginalMessage, messageService)
-	}else if (actionValue == "delete"){
-		app.DeleteMessage(callback.Channel,callback.OriginalMessage, messageService)
+	if actionValue == "strikethrough" {
+		app.Strikethrough(callback.Channel, callback.OriginalMessage, messageService)
+	} else if actionValue == "italic" {
+		app.Italic(callback.Channel, callback.OriginalMessage, messageService)
+	} else if actionValue == "war" {
+		app.ThermonuclearWar(callback.Channel, callback.OriginalMessage, messageService)
+	} else if actionValue == "delete" {
+		app.DeleteMessage(callback.Channel, callback.OriginalMessage, messageService)
 	}
 
 	return events.APIGatewayProxyResponse{
@@ -51,8 +50,8 @@ func handler(request events.APIGatewayProxyRequest, messageService app.MessageSe
 }
 
 func main() {
-	messageService:= slack.NewSlackService();
-	lambda.Start(func (request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
-		return handler(request,messageService)
+	messageService := slack.NewSlackService()
+	lambda.Start(func(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		return handler(request, messageService)
 	})
 }
