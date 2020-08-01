@@ -10,6 +10,7 @@ import (
 
 	"hoiLightningTalk/app"
 	"hoiLightningTalk/infra/mgo"
+	"hoiLightningTalk/infra/slack"
 )
 
 func GetPingUser(text string) string{
@@ -23,7 +24,7 @@ func GetMessage(text string, pingUser string) string{
 
 
 
-func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository) (events.APIGatewayProxyResponse, error) {
+func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository,messageService app.MessageService) (events.APIGatewayProxyResponse, error) {
 	params,err := url.ParseQuery(request.Body)
 
 	if err != nil {
@@ -51,13 +52,10 @@ func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository) 
 	message := GetMessage(text,pingUser)
 	pingedCallback,_ := app.GetUserUrl(pingUser,userRepo)
 
-	err=app.SendPing(pingUser,message,byUsername,userRepo)
+	err=app.SendPing(pingUser,message,byUsername,userRepo,messageService)
 
 	if err!= nil{
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: 400,
-		}, nil
+		return events.APIGatewayProxyResponse{}, err
 	}
 
 	return events.APIGatewayProxyResponse{
@@ -68,7 +66,8 @@ func handler(request events.APIGatewayProxyRequest,userRepo app.UserRepository) 
 
 func main() {
 	userRepo:= mgo.NewMongoUserRepository();
+	messageService:= slack.NewSlackService();
 	lambda.Start(func (request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
-		return handler(request,userRepo)
+		return handler(request,userRepo,messageService)
 	})
 }

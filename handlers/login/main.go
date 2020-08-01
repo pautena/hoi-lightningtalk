@@ -8,10 +8,11 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"hoiLightningTalk/app"
 	"hoiLightningTalk/infra/mgo"
+	"hoiLightningTalk/infra/slack"
 )
 
 
-func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository) (events.APIGatewayProxyResponse, error) {
+func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository, messageService app.MessageService) (events.APIGatewayProxyResponse, error) {
 
 	params,err := url.ParseQuery(request.Body)
 
@@ -52,7 +53,7 @@ func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository)
 	msg :=fmt.Sprintf("Hello, user %v, from team %v",uID,team)
 
 	if rUrl != "" {
-		app.SendSlackMessageToUrl(rUrl,msg)
+		messageService.SendMessageToHook(rUrl,msg)
 	}
 
 	return events.APIGatewayProxyResponse{
@@ -62,7 +63,8 @@ func handler(request events.APIGatewayProxyRequest, userRepo app.UserRepository)
 
 func main() {
 	userRepo:= mgo.NewMongoUserRepository();
+	messageService:= slack.NewSlackService();
 	lambda.Start(func (request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
-		return handler(request,userRepo)
+		return handler(request,userRepo,messageService)
 	})
 }

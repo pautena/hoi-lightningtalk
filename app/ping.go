@@ -7,9 +7,7 @@ import (
 	"hoiLightningTalk/domain"
 )
 
-
-
-func SendPing(PingUserId string, Message, ByUsername string, userRepo UserRepository) error{
+func SendPing(PingUserId string, Message, ByUsername string, userRepo UserRepository,messageService MessageService) error{
 	PingUser,err := userRepo.GetUser(PingUserId)
 
 	if err != nil{
@@ -78,7 +76,7 @@ func SendPing(PingUserId string, Message, ByUsername string, userRepo UserReposi
 		},
 	}
 
-	response := SendSlackMessageToUser(text,PingUser.SlackId,attachments)
+	response := messageService.SendMessageToChannel(text,PingUser.SlackId,attachments)
 	log.Println(response)
 
 	return nil

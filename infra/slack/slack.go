@@ -1,4 +1,4 @@
-package app
+package slack
 
 import (
 	"bytes"
@@ -9,10 +9,26 @@ import (
 	"io/ioutil"
 	"net/http"
 	"hoiLightningTalk/domain"
+	"hoiLightningTalk/app"
 )
 
 
-func sendMessage(url string, rBody []byte) domain.SlackResponse{
+type SlackService struct {
+	postMessageUrl string
+	chatUpdateUrl string
+	chatDeleteUrl string
+}
+
+func NewSlackService() app.MessageService{
+	return SlackService {
+		postMessageUrl: "https://slack.com/api/chat.postMessage",
+		chatUpdateUrl: "https://slack.com/api/chat.update",
+		chatDeleteUrl: "https://slack.com/api/chat.delete",
+	}
+}
+
+
+func (ss SlackService) sendMessage(url string, rBody []byte) domain.SlackResponse{
 	client := &http.Client{}
 	req,err := http.NewRequest("POST",url,bytes.NewBuffer(rBody))
 
@@ -58,7 +74,7 @@ func sendMessage(url string, rBody []byte) domain.SlackResponse{
 
 
 
-func SendSlackMessageToUrl(url string, msg string) domain.SlackResponse{
+func (ss SlackService) SendMessageToHook(url string, msg string) domain.SlackResponse{
 
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Text:msg,
@@ -69,10 +85,10 @@ func SendSlackMessageToUrl(url string, msg string) domain.SlackResponse{
 		return domain.SlackResponse{}
 	}
 
-	return sendMessage(url,rBody)
+	return ss.sendMessage(url,rBody)
 }
 
-func SendSlackMessageToUser(text string, channel string,attachments []domain.SlackAttachment) domain.SlackResponse{
+func (ss SlackService) SendMessageToChannel(text string, channel string,attachments []domain.SlackAttachment) domain.SlackResponse{
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Channel:channel,
 		Text:text,
@@ -86,10 +102,10 @@ func SendSlackMessageToUser(text string, channel string,attachments []domain.Sla
 		return domain.SlackResponse{}
 	}
 
-	return sendMessage("https://slack.com/api/chat.postMessage",rBody)
+	return ss.sendMessage(ss.postMessageUrl,rBody)
 }
 
-func UpdateSlackMessage(text string, channel string,ts string) domain.SlackResponse{
+func (ss SlackService) UpdateMessage(text string, channel string,ts string) domain.SlackResponse{
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Channel:channel,
 		Text:text,
@@ -101,10 +117,10 @@ func UpdateSlackMessage(text string, channel string,ts string) domain.SlackRespo
 		return domain.SlackResponse{}
 	}
 
-	return sendMessage("https://slack.com/api/chat.update",rBody)
+	return ss.sendMessage(ss.chatUpdateUrl,rBody)
 }
 
-func RepplySlackMessage(text string, channel string,ts string) domain.SlackResponse{
+func (ss SlackService) RepplyMessage(text string, channel string,ts string) domain.SlackResponse{
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Channel:channel,
 		Text:text,
@@ -116,10 +132,10 @@ func RepplySlackMessage(text string, channel string,ts string) domain.SlackRespo
 		return domain.SlackResponse{}
 	}
 
-	return sendMessage("https://slack.com/api/chat.postMessage",rBody)
+	return ss.sendMessage(ss.postMessageUrl,rBody)
 }
 
-func DeleteSlackMessage(channel string, ts string) domain.SlackResponse {
+func (ss SlackService) DeleteMessage(channel string, ts string) domain.SlackResponse {
 	rBody,err := json.Marshal(domain.SlackPayload{
 		Channel:channel,
 		Ts:ts,
@@ -130,5 +146,5 @@ func DeleteSlackMessage(channel string, ts string) domain.SlackResponse {
 		return domain.SlackResponse{}
 	}
 
-	return sendMessage("https://slack.com/api/chat.delete",rBody)
+	return ss.sendMessage(ss.chatDeleteUrl,rBody)
 }

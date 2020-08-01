@@ -20,7 +20,7 @@ type UserMongoRepository struct {
 
 
 func NewMongoUserRepository() app.UserRepository {
-	return UserMongoRepository {Collection:getDatabase().Collection("users")};
+	return UserMongoRepository {Collection:getDatabase().Collection("users")}
 }
 
 func (ur UserMongoRepository) SaveUser(p domain.User) {
