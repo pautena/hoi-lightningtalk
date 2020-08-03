@@ -3,9 +3,6 @@ S3_BUCKET := $(S3_BUCKET)
 STACK_NAME := $(STACK_NAME)
 TEMPLATE = template.yaml
 
-.PHONY: test
-test:
-	go test ./...
 
 .PHONY: clean
 clean:
@@ -39,3 +36,9 @@ package: build
 .PHONY: deploy
 deploy: package
 	sam deploy --stack-name $(STACK_NAME) --template-file $(PACKAGED_TEMPLATE) --capabilities CAPABILITY_IAM
+
+lint:
+	golangci-lint run 
+
+fixcode:
+	golangci-lint run --fix

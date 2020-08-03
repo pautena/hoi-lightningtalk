@@ -3,3 +3,4 @@ bin
 environment
 packaged.yaml
 template.yaml
+.golangci.yml
